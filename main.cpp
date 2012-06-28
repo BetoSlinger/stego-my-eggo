@@ -141,7 +141,6 @@ int main(int argc, char *argv[])
 
 		cnt++;
 	}
-	printf("made it\n");	
 
 	if(cnt == MAX_CHUNKS)
 	{
@@ -174,8 +173,12 @@ int main(int argc, char *argv[])
 		while(cnt < MAX_CHUNKS)
 		{
 			x = readChunkHeader(fptr, &chunk[cnt]);
-			if(x == FAILURE) system("pause");exit(-1);
-
+			
+			if(x == FAILURE) 
+            {
+                 system("pause");
+                 exit(-1);
+            }
 			// read in chunk data
 			pChunkData[cnt] = readChunkData(fptr, chunk[cnt].chunkSize);
 			if(pChunkData[cnt] == NULL)
@@ -193,6 +196,7 @@ int main(int argc, char *argv[])
 			cnt++;
 		}
 	}
+	
 
 	// pChunkData[dataFlag] is a pointer to the begining of the WAVE data
 	// if 8 bit, then it is unsigned	0 to 255
@@ -202,7 +206,7 @@ int main(int argc, char *argv[])
 
 	printf("\n");
 	fclose(fptr);
-
+	printf("Exiting...\n");
 	system("pause");
 
 	exit(0);
