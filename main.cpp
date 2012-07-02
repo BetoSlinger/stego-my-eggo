@@ -9,6 +9,11 @@
 
 
 WAVEFORMATEX *pHeader;
+int parseData(BYTE *);
+
+int parseData(BYTE * soundData){
+   
+}   
 
 int readChunkHeader(FILE *fptr, W_CHUNK *pChunk)
 {
@@ -64,10 +69,12 @@ int main(int argc, char *argv[])
 {
 	FILE *fptr;
 	DWORD fileSize;
-	int x, cnt, dataFlag, formatFlag;
+	int x, cnt, dataFlag, formatFlag, noSampleFrames;
 	W_CHUNK chunk[MAX_CHUNKS];		// assuming max of 8 chunks, should only be 3 for you
 	BYTE *pChunkData[MAX_CHUNKS];
 	W_FORMAT format;		// only 1 format chunk
+
+	DWORD dataChunkSize;
 
 	/*
     if(argc != 2)
@@ -197,15 +204,40 @@ int main(int argc, char *argv[])
 		}
 	}
 	
+	
 
 	// pChunkData[dataFlag] is a pointer to the begining of the WAVE data
 	// if 8 bit, then it is unsigned	0 to 255
 	// if 16 bit, then it is signed		-32768 to +32767
 	// ask me any other questions
 	// the web page should answer others
+	
+	dataChunkSize = (chunk[dataFlag].chunkSize);
+	noSampleFrames = dataChunkSize/format.blockAlign;
+	
+	printf("Size of data chunk: %ld\nSample Frames: %d\n",dataChunkSize,noSampleFrames);
+	
+	
+	cnt = 0;
+	BYTE * start = pChunkData[dataFlag];
+	BYTE left,right;
+	while(cnt < noSampleFrames)
+	{
+          printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
+          //left =  start[cnt * format.blockAlign];
+          //right = start[2 + (cnt * format.blockAlign)];
+          cnt++;          
+    }
+
+	
+	
+	
+	
 
 	printf("\n");
+	
 	fclose(fptr);
+	
 	printf("Exiting...\n");
 	system("pause");
 

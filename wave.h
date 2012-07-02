@@ -31,7 +31,15 @@ typedef struct
 
 typedef struct
 {
+    DWORD leftChannel;
+    DWORD rightChannel;
+    
+} W_SAMPLE;
 
-} W_DATA;
+typedef struct
+{
+    W_SAMPLE * sampleFrames;
+        
+}  W_DATA;
 
 
