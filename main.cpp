@@ -6,15 +6,36 @@
 #include <windows.h>
 #include <stdio.h>
 #include "wave.h"
+#include <vector>
+#include <iostream>
+#include "bitWiseChar.h"
+
+using namespace std;
 
 
 WAVEFORMATEX *pHeader;
-int parseData(BYTE *);
+int parseMessage(BYTE *);
 
-int parseData(BYTE * soundData){
+/*  parseMessage()
+ *  argument: null terminated char *
+ *  returns: vector of Bitwise Characters
+ */
+
+/* vector<BitWiseChar> parseMessage(char * m){
+    vector<BitWiseChar> v;
+    BitWiseChar t;
+    while(*m != '\0'){
+        t.setChar(*m);
+        v.insert(v.end(),t );
+        m++;
+    }
+    return v;
+        
    
-}   
-
+}   */
+int twoBytes2Long(BYTE low , BYTE high){
+    return (long long)(short)(high << 8) + low;
+}
 int readChunkHeader(FILE *fptr, W_CHUNK *pChunk)
 {
 	int x;
@@ -219,17 +240,43 @@ int main(int argc, char *argv[])
 	
 	
 	cnt = 0;
+	int noOfBlks = 4, i,/*samplel,sampler*/;
 	BYTE * start = pChunkData[dataFlag];
-	BYTE left,right;
-	while(cnt < noSampleFrames)
-	{
-          printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
-          //left =  start[cnt * format.blockAlign];
-          //right = start[2 + (cnt * format.blockAlign)];
-          cnt++;          
-    }
+	long long left,right;
+	char * message = "Man, I always wind up in a lazy ass group.\0";
+	
 
 	
+//	vector<BitWiseChar> vmessage = parseMessage(message); 
+		while(cnt < /*noSampleFrames*/ 32)
+	{
+          left = 0,right =0; 
+          //printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
+          //left =  start[cnt * format.blockAlign];
+          //right = start[2 + (cnt * format.blockAlign)];
+          //for(i = 0; i < noOfBlks ; i++){
+        
+          for(i = 0; i < noOfBlks ; i ++){
+          //cout<< "left 1st: " << (cnt * format.blockAlign) + noOfBlks * i << "left 2nd: " << (cnt * format.blockAlign) +1  + noOfBlks * i<< endl;
+          //cout<< "right 1st: " << (cnt * format.blockAlign) + 2 + noOfBlks * i<< "right 2nd: "<< (cnt * format.blockAlign) +3  + noOfBlks * i <<endl;
+          left += /*samplel = */(long)twoBytes2Long(start[(cnt * format.blockAlign) + noOfBlks * i] , (start[(cnt * format.blockAlign) +1  + noOfBlks * i] ));
+          right += /*sampler = */(long)twoBytes2Long(start[(cnt * format.blockAlign) + 2 + noOfBlks * i], (start[(cnt * format.blockAlign) +3  + noOfBlks * i] ));
+         // if (samplel > 0)
+          //cout << "single l: " << samplel << endl;
+          //if (sampler > 0)
+          //cout << "single r: " << sampler << endl;
+          
+          }
+          //cout<< "left: " << left << endl;
+          //cout<< "right: " << right << endl;
+          left = left/noOfBlks;
+          right = right/noOfBlks;
+          cout<< "left average: " << left << endl;
+          cout<< "right average: " << right << endl;
+          cnt+=noOfBlks;          
+    }
+
+	//printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
 	
 	
 	
