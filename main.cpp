@@ -9,8 +9,14 @@
 #include <vector>
 #include <iostream>
 #include "bitWiseChar.h"
-
+#include <stdlib.h>
+#include <time.h>
+#include <fstream>
 using namespace std;
+
+
+
+
 
 
 WAVEFORMATEX *pHeader;
@@ -36,6 +42,8 @@ int parseMessage(BYTE *);
 int twoBytes2Long(BYTE low , BYTE high){
     return (long long)(short)(high << 8) + low;
 }
+
+
 int readChunkHeader(FILE *fptr, W_CHUNK *pChunk)
 {
 	int x;
@@ -240,40 +248,166 @@ int main(int argc, char *argv[])
 	
 	
 	cnt = 0;
-	int noOfBlks = 4, i,/*samplel,sampler*/;
+    
+    
+	int noOfBlks = 4, i, r;/*samplel,sampler*/;
 	BYTE * start = pChunkData[dataFlag];
-	long long left,right;
-	char * message = "Man, I always wind up in a lazy ass group.\0";
-	
+	srand ( time(NULL) );
+	long long left,right,leftm,rightm,diff;
+	//string message("Man, I always wind up in a lazy ass group.");
+	ifstream::pos_type size;
+	char * b_message; 
+	/*b_message = (BYTE *)malloc(sizeof(noSampleFrames));
+    if(b_message == NULL )
+    {
+        system("pause");
+        exit(-1);                                
+    } 
+    message.copy(b_message,42,0);
+    */ 
+    /* http://www.cplusplus.com/doc/tutorial/files/ */
+    ifstream file ("message.bin", ios::in|ios::binary|ios::ate);
+    if (file.is_open())
+    {
+        size = file.tellg();
+        b_message = new char [size];
+        file.seekg (0, ios::beg);
+        file.read (b_message, size);
+        file.close();
 
+        cout << "the message file content is in memory" << endl;
+
+        
+    }
+    else cout << "Unable to open file";
+    /* code quote ends here */
+    
 	
 //	vector<BitWiseChar> vmessage = parseMessage(message); 
-		while(cnt < /*noSampleFrames*/ 32)
-	{
-          left = 0,right =0; 
+    while(cnt < size && cnt < noSampleFrames )
+    {     
+          
+              
+          for(i = 0; i < 4 /*sample frame size in bytes */ ; i ++)
+          {
+              leftm = (long long)twoBytes2Long(b_message[(cnt * format.blockAlign) + 4 * i] , b_message[(cnt * format.blockAlign) +1  + 4 * i] );
+              rightm = (long long)twoBytes2Long(b_message[(cnt * format.blockAlign) + 2 + 4 * i], b_message[(cnt * format.blockAlign) +3  + 4 * i] );
+              
+              //cout<< "unsigned left message value: " << leftm << endl;
+              //cout<< "unsigned right message value:" << rightm << endl;
+          }
+          
+          
           //printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
           //left =  start[cnt * format.blockAlign];
           //right = start[2 + (cnt * format.blockAlign)];
-          //for(i = 0; i < noOfBlks ; i++){
-        
-          for(i = 0; i < noOfBlks ; i ++){
-          //cout<< "left 1st: " << (cnt * format.blockAlign) + noOfBlks * i << "left 2nd: " << (cnt * format.blockAlign) +1  + noOfBlks * i<< endl;
-          //cout<< "right 1st: " << (cnt * format.blockAlign) + 2 + noOfBlks * i<< "right 2nd: "<< (cnt * format.blockAlign) +3  + noOfBlks * i <<endl;
-          left += /*samplel = */(long)twoBytes2Long(start[(cnt * format.blockAlign) + noOfBlks * i] , (start[(cnt * format.blockAlign) +1  + noOfBlks * i] ));
-          right += /*sampler = */(long)twoBytes2Long(start[(cnt * format.blockAlign) + 2 + noOfBlks * i], (start[(cnt * format.blockAlign) +3  + noOfBlks * i] ));
-         // if (samplel > 0)
-          //cout << "single l: " << samplel << endl;
-          //if (sampler > 0)
-          //cout << "single r: " << sampler << endl;
           
-          }
-          //cout<< "left: " << left << endl;
-          //cout<< "right: " << right << endl;
-          left = left/noOfBlks;
-          right = right/noOfBlks;
-          cout<< "left average: " << left << endl;
-          cout<< "right average: " << right << endl;
-          cnt+=noOfBlks;          
+          //do
+          //{
+              left = 0,right =0; 
+              for(i = 0; i < noOfBlks ; i ++){
+              //cout<< "left 1st: " << (cnt * format.blockAlign) + noOfBlks * i << "left 2nd: " << (cnt * format.blockAlign) +1  + noOfBlks * i<< endl;
+              //cout<< "right 1st: " << (cnt * format.blockAlign) + 2 + noOfBlks * i<< "right 2nd: "<< (cnt * format.blockAlign) +3  + noOfBlks * i <<endl;
+              left += /*samplel = */(long long)twoBytes2Long(start[(cnt * format.blockAlign) + 4 * i] , (start[(cnt * format.blockAlign) +1  + 4 * i] ));
+              right += /*sampler = */(long long)twoBytes2Long(start[(cnt * format.blockAlign) + 2 + 4 * i], start[(cnt * format.blockAlign) +3  + 4 * i] );
+             // if (samplel > 0)
+              //cout << "single l: " << samplel << endl;
+              //if (sampler > 0)
+              //cout << "single r: " << sampler << endl;
+              
+              }
+              //cout<< "left: " << left << endl;
+              //cout<< "right: " << right << endl;
+              left = left/noOfBlks;
+              right = right/noOfBlks;
+              //cout<< "left average: " << left << endl;
+              //cout<< "right average: " << right << endl;
+              cout<< "left average a: " << left << "left message: " << leftm << endl;
+              cout<< "right average a: " << right <<"right message: " << rightm << endl;
+              if((diff = leftm - left))
+              {
+                        cout << "diff: " << diff <<endl;
+                        for( i = 0 ; i < noOfBlks; i ++){
+                      
+                            start[(cnt * format.blockAlign) + 4 * i] += diff & 255;
+                            start[(cnt * format.blockAlign) + 1 + 4 * i] += diff >> 8;
+                        
+                        }
+                        while(left != leftm){
+                                    x = rand() % 4;
+                                   
+                                    if(left > leftm)
+                                    {
+                                            start[(cnt * format.blockAlign) + 4 * x]++;
+                                            if (start[(cnt * format.blockAlign) + 4 * x] == 0)
+                                            {
+                                                 start[(cnt * format.blockAlign) + 4 * x + 1] ++;
+                                            }
+                                    }else{     
+                                            start[(cnt * format.blockAlign) + 4 * x]--;
+                                            if (start[(cnt * format.blockAlign) + 4 * x] == 0xFF )
+                                            {
+                                                 start[(cnt * format.blockAlign) + 4 * x + 1] --;
+                                            }
+                                    }  
+                                    for(i = 0; i < noOfBlks ; i ++){
+              
+                                    left += (long long)twoBytes2Long(start[(cnt * format.blockAlign) + 4 * i] , (start[(cnt * format.blockAlign) +1  + 4 * i] ));
+              
+                                    
+              
+                                    }     
+                                    left/=4; 
+                                            
+                        } 
+              }
+              if((diff = rightm - right))
+              {
+                         cout << "diff: " << diff <<endl; 
+                        for( i = 0 ; i < noOfBlks; i ++){
+                              
+                              
+                            start[(cnt * format.blockAlign) + 2 + 4 * i] += diff & 255;
+                            start[(cnt * format.blockAlign) + 3 + 4 * i] += diff >> 8;
+                        }    
+                        while(right != rightm){
+                                    x = rand() % 4;
+                                   
+                                    if(right > rightm)
+                                    {
+                                            start[(cnt * format.blockAlign) + 4 * x + 2]++;
+                                            if (start[(cnt * format.blockAlign) + 4 * x + 2] == 0)
+                                            {
+                                                 start[(cnt * format.blockAlign) + 4 * x + 3] ++;
+                                            }
+                                    }else{     
+                                            start[(cnt * format.blockAlign) + 4 * x + 2]--;
+                                            if (start[(cnt * format.blockAlign) + 4 * x + 2] == 0xFF )
+                                            {
+                                                 start[(cnt * format.blockAlign) + 4 * x + 3] --;
+                                            }
+                                    } 
+                                    for(i = 0; i < noOfBlks ; i ++)
+                                    {
+              
+                                    right += (long long)twoBytes2Long(start[(cnt * format.blockAlign) + 2 + 4 * i] , (start[(cnt * format.blockAlign) +3  + 4 * i] ));
+              
+                                    
+              
+                                    }     
+                                    right/=4;        
+                                            
+                        } 
+              }       
+               cout<< "left average b: " << left << "left message:" << leftm << endl;
+               cout<< "right average b: " << right <<"right message:" << rightm << endl;
+         // }
+          //while(leftm != left && rightm != right);
+         cout<< "left average c: " << left << "left message:" << leftm <<  endl;
+         cout<< "right average c: " << right <<"right message:" << rightm << endl;
+          
+          cnt+=noOfBlks; 
+                   
     }
 
 	//printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
