@@ -250,21 +250,13 @@ int main(int argc, char *argv[])
 	cnt = 0;
     
     
-	int noOfBlks = 4, i, r;/*samplel,sampler*/;
+	int noOfBlks = 4, i, r;
 	BYTE * start = pChunkData[dataFlag];
 	srand ( time(NULL) );
-	long long left,right,leftm,rightm,diff;
-	//string message("Man, I always wind up in a lazy ass group.");
+	long long left,right,leftm,rightm,diff; /* used long long as I anticipate large averages being required to minimize effect on cover */
 	ifstream::pos_type size;
 	char * b_message; 
-	/*b_message = (BYTE *)malloc(sizeof(noSampleFrames));
-    if(b_message == NULL )
-    {
-        system("pause");
-        exit(-1);                                
-    } 
-    message.copy(b_message,42,0);
-    */ 
+
     /* http://www.cplusplus.com/doc/tutorial/files/ */
     ifstream file ("message.bin", ios::in|ios::binary|ios::ate);
     if (file.is_open())
@@ -283,37 +275,22 @@ int main(int argc, char *argv[])
     /* code quote ends here */
     
 	
-//	vector<BitWiseChar> vmessage = parseMessage(message); 
+
     while(cnt < size && cnt < noSampleFrames )
-    {     
-          
-              
+    {                  
           for(i = 0; i < 4 /*sample frame size in bytes */ ; i ++)
           {
               leftm = (long long)twoBytes2Long(b_message[(cnt * format.blockAlign) + 4 * i] , b_message[(cnt * format.blockAlign) +1  + 4 * i] );
               rightm = (long long)twoBytes2Long(b_message[(cnt * format.blockAlign) + 2 + 4 * i], b_message[(cnt * format.blockAlign) +3  + 4 * i] );
-              
-              //cout<< "unsigned left message value: " << leftm << endl;
-              //cout<< "unsigned right message value:" << rightm << endl;
           }
           
           
-          //printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
-          //left =  start[cnt * format.blockAlign];
-          //right = start[2 + (cnt * format.blockAlign)];
-          
-          //do
-          //{
               left = 0,right =0; 
               for(i = 0; i < noOfBlks ; i ++){
-              //cout<< "left 1st: " << (cnt * format.blockAlign) + noOfBlks * i << "left 2nd: " << (cnt * format.blockAlign) +1  + noOfBlks * i<< endl;
-              //cout<< "right 1st: " << (cnt * format.blockAlign) + 2 + noOfBlks * i<< "right 2nd: "<< (cnt * format.blockAlign) +3  + noOfBlks * i <<endl;
-              left += /*samplel = */(long long)twoBytes2Long(start[(cnt * format.blockAlign) + 4 * i] , (start[(cnt * format.blockAlign) +1  + 4 * i] ));
-              right += /*sampler = */(long long)twoBytes2Long(start[(cnt * format.blockAlign) + 2 + 4 * i], start[(cnt * format.blockAlign) +3  + 4 * i] );
-             // if (samplel > 0)
-              //cout << "single l: " << samplel << endl;
-              //if (sampler > 0)
-              //cout << "single r: " << sampler << endl;
+              
+              left += (long long)twoBytes2Long(start[(cnt * format.blockAlign) + 4 * i] , (start[(cnt * format.blockAlign) +1  + 4 * i] ));
+              right += (long long)twoBytes2Long(start[(cnt * format.blockAlign) + 2 + 4 * i], start[(cnt * format.blockAlign) +3  + 4 * i] );
+             
               
               }
               //cout<< "left: " << left << endl;
