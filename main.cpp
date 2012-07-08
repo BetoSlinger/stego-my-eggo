@@ -249,8 +249,8 @@ int main(int argc, char *argv[])
 	
 	cnt = 0;
     
-    
-	int noOfBlks = 4, i, r;
+    int sampleSize = 16;
+	int noOfBlks = 4, i;
 	BYTE * start = pChunkData[dataFlag];
 	srand ( time(NULL) );
 	long long left,right,leftm,rightm,diff; /* used long long as I anticipate large averages being required to minimize effect on cover */
@@ -259,6 +259,9 @@ int main(int argc, char *argv[])
 
     /* http://www.cplusplus.com/doc/tutorial/files/ */
     ifstream file ("message.bin", ios::in|ios::binary|ios::ate);
+
+    
+
     if (file.is_open())
     {
         size = file.tellg();
@@ -293,12 +296,10 @@ int main(int argc, char *argv[])
              
               
               }
-              //cout<< "left: " << left << endl;
-              //cout<< "right: " << right << endl;
+              
               left = left/noOfBlks;
               right = right/noOfBlks;
-              //cout<< "left average: " << left << endl;
-              //cout<< "right average: " << right << endl;
+              
               cout<< "left average a: " << left << "left message: " << leftm << endl;
               cout<< "right average a: " << right <<"right message: " << rightm << endl;
               if((diff = leftm - left))
@@ -378,16 +379,72 @@ int main(int argc, char *argv[])
               }       
                cout<< "left average b: " << left << "left message:" << leftm << endl;
                cout<< "right average b: " << right <<"right message:" << rightm << endl;
-         // }
-          //while(leftm != left && rightm != right);
-         cout<< "left average c: " << left << "left message:" << leftm <<  endl;
-         cout<< "right average c: " << right <<"right message:" << rightm << endl;
+         
           
           cnt+=noOfBlks; 
                    
     }
+    
+    cout << "Completed processing...\n";
+    
+   
+    ofstream outfile ("eggo.wav", ios::out | ios::trunc | ios::binary); 
+	cout<< "data size: " << chunk[dataFlag].chunkSize << endl;
+	cout << "format flag: " << formatFlag << "data flag: " << dataFlag << endl ;
+	//char * buffer = new char[chunk[dataFlag].chunkSize];
+	if(outfile.is_open()){
+		outfile.write((char *)&(chunk[0]),8);
+	//outfile.close();
+	//ofstream outfile2 ("eggo.wav", ios::out | ios::app | ios::binary);
+    //if(outfile2.is_open())
+    //{
+        //outfile.write((char *)&(chunk[0]),8);
+        outfile.write((char *)pChunkData[0],4);
+		
+	    //outfile.flush();
+        outfile.write("fmt ",4);
+		outfile.write((char *)&sampleSize,4);
+        outfile.write((char *)&format,16);
+        outfile.write((char *)&chunk[dataFlag],8);
+		
+        outfile.write((char *)start,chunk[dataFlag].chunkSize); //new data
+    }
+	cout << outfile.tellp() << " is the current position of the file pointer.\n";
+    outfile.close();
+   /* rewind(fptr);
+    cnt = 0;
+    if(outfile.is_open()){
+        while(cnt < MAX_CHUNKS)
+		{
+            x = readChunkHeader(fptr, &chunk[cnt]);
+			
+			
+			if(x == FAILURE) 
+            {
+                 system("pause");
+                 exit(-1);
+            }
+            outfile.write(
+           	if(memcmp( &(chunk[cnt].chunkID), "data", 4) == 0)
+			{
+				dataFlag = cnt;	// found data chunk
+				break;
+			}
+			// read in chunk data
+			pChunkData[cnt] = readChunkData(fptr, chunk[cnt].chunkSize);
+			if(pChunkData[cnt] == NULL)
+            {
+                system("pause");
+                exit(-1);                                
+            }
 
-	//printf("Left LSB: %X Right LSB: %X count: %d stop: %d \n", start[cnt * format.blockAlign], start[2 + (cnt * format.blockAlign)],cnt,noSampleFrames);
+		
+
+			cnt++;
+		}
+                 
+    }*/
+	
 	
 	
 	
