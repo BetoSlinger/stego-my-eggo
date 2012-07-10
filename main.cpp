@@ -94,6 +94,25 @@ void printFormat(W_FORMAT fmt)
 	return;
 } // printFormat
 
+int averageBlocks(BYTE * start,long long place,int noOfBlks)
+{
+              int num = 0;
+              int i;
+              for(i = 0; i < noOfBlks ; i ++)
+              {
+              
+              num += (long long)twoBytes2Long(start[place + 4 * i] , (start[place +1  + 4 * i] ));
+                        
+              }
+              
+              num = left/noOfBlks;
+              
+			  
+			  return num & 255;
+			 
+}
+
+
 int main(int argc, char *argv[])
 {
 	FILE *fptr;
@@ -253,7 +272,8 @@ int main(int argc, char *argv[])
 	int noOfBlks = 4, i;
 	BYTE * start = pChunkData[dataFlag];
 	srand ( time(NULL) );
-	long long left,right,leftm,rightm,diff; /* used long long as I anticipate large averages being required to minimize effect on cover */
+	long long left,right; /* used long long as I anticipate large averages being required to minimize effect on cover */
+	int leftm, rightm,diff;
 	ifstream::pos_type size;
 	char * b_message; 
 
@@ -281,37 +301,50 @@ int main(int argc, char *argv[])
 
     while(cnt < size && cnt < noSampleFrames )
     {                  
-          for(i = 0; i < 4 /*sample frame size in bytes */ ; i ++)
+          for(i = 0; i < 2/*sample frame size in bytes */ ; i ++)
           {
-              leftm = (long long)twoBytes2Long(b_message[(cnt * format.blockAlign) + 4 * i] , b_message[(cnt * format.blockAlign) +1  + 4 * i] );
-              rightm = (long long)twoBytes2Long(b_message[(cnt * format.blockAlign) + 2 + 4 * i], b_message[(cnt * format.blockAlign) +3  + 4 * i] );
+              leftm = b_message[2*(cnt * format.blockAlign) ] ;
+              rightm =  b_message[2*(cnt * format.blockAlign) + 1];
           }
           
           
               left = 0,right =0; 
-              for(i = 0; i < noOfBlks ; i ++){
-              
-              left += (long long)twoBytes2Long(start[(cnt * format.blockAlign) + 4 * i] , (start[(cnt * format.blockAlign) +1  + 4 * i] ));
-              right += (long long)twoBytes2Long(start[(cnt * format.blockAlign) + 2 + 4 * i], start[(cnt * format.blockAlign) +3  + 4 * i] );
              
               
-              }
+              left  = averageBlocks(start, cnt * format.blockAlign,noOfBlocks);
+              right = averageBlocks(start, cnt * format.blockAlign,noOfBlocks);
               
-              left = left/noOfBlks;
-              right = right/noOfBlks;
+			  
               
               cout<< "left average a: " << left << "left message: " << leftm << endl;
               cout<< "right average a: " << right <<"right message: " << rightm << endl;
-              if((diff = leftm - left))
+              while(leftm != left)
               {
-                        cout << "diff: " << diff <<endl;
-                        for( i = 0 ; i < noOfBlks; i ++){
-                      
-                            start[(cnt * format.blockAlign) + 4 * i] += diff & 255;
-                            start[(cnt * format.blockAlign) + 1 + 4 * i] += diff >> 8;
-                        
-                        }
-                        while(left != leftm){
+                        x = rand() % 4;
+                        //cout << "diff: " << diff <<endl;
+                        if(left > leftm)//left channel adjust
+                            start[(cnt * format.blockAlign) + 4 * x]++;
+                         
+                        }else{    
+                            start[(cnt * format.blockAlign) + 4 * x]--;
+                            
+						}
+						left  = averageBlocks(start, cnt * format.blockAlign,noOfBlocks);
+						cout << "diff: "<< diff <<  endl;
+              }
+              while(rightm != right)
+              {          	
+						 x = rand() % 4;
+                        //cout << "diff: " << diff <<endl;
+                        if(right > rightm)//left channel adjust
+                            start[(cnt * format.blockAlign) + 4 * x + 2]++;
+                        }else{    
+                            start[(cnt * format.blockAlign) + 4 * x + 2]--;                            
+						}
+						right  = averageBlocks(start, cnt * format.blockAlign,noOfBlocks);
+						cout << "diff: "<< diff <<  endl;
+              }          
+                        /*while(left != leftm){
                                     x = rand() % 4;
                                    
                                     if(left > leftm)
@@ -376,7 +409,7 @@ int main(int argc, char *argv[])
                                     right/=4;        
                                             
                         } 
-              }       
+              }    */   
                cout<< "left average b: " << left << "left message:" << leftm << endl;
                cout<< "right average b: " << right <<"right message:" << rightm << endl;
          
